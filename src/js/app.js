@@ -1,2 +1,4 @@
-// eslint-disable-next-line no-console
-console.log('it works!');
+import SportsReportWidget from './SportsReportWidget';
+
+const report = new SportsReportWidget(document.querySelector('.container'));
+report.bindToDOM();
