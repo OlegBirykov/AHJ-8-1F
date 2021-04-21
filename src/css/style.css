@@ -1,56 +1,68 @@
-body {
-  background-color: white;
-}
-
-.container {
-  min-width: 300px;
-  max-width: 500px;
-  margin: 100px auto 0 auto;
-  border: 1px solid #000000;
-  border-radius: 15px;
-  overflow: hidden;
-}
-
-[data-widget=sports-report-widget] * {
-  box-sizing: border-box;
+* {
   margin: 0;
   padding: 0;
   border: none;
-
-  font-family: "Arial", sans-serif;
-  font-size: 20px;
-  line-height: 1.4;
   color: black;
-  background-color: white;
+  font: inherit;
+  background-color: transparent;  
 }
 
-[data-widget=sports-report-widget] .red {
+body {
+  background-color: white;
+  font-family: "Arial", sans-serif;
+  font-size: 20px;
+}
+
+#container {
+  min-width: 300px;
+  max-width: 500px;
+  margin: 100px auto 0 auto;
+}
+
+.sports-report-widget .comments-wrap{
+  padding: 2em 0;
+  border: 1px solid #000000;
+  border-radius: 15px;
+}
+
+.sports-report-widget .comments{
+  padding-right: 0.5em;
+  max-height: 500px;
+  overflow: auto;
+}
+
+.sports-report-widget .error {
+  margin: 1em 0 0 1em;
+  font-size: 0.8em;
   color: red;
 }
 
-[data-widget=sports-report-widget] {
-  margin: 2em 0.5em 2em 0;
-  max-height: 500px;
-  overflow-y: auto;
-  background-color: white;  
-}
-
-[data-widget=sports-report-widget] [data-id=comment] {
+.sports-report-widget .comment {
   display: flex;
 }
 
-[data-widget=sports-report-widget] [data-id=icon] {
+.sports-report-widget .icon {
   font-size: 1.5em;
   flex: 0 0 2em;
   padding-top: 0.7em;
   text-align: center;
 }
 
-[data-widget=sports-report-widget] [data-id=text]{
-  flex: 0 1 auto;
-  padding-bottom: 0.8em;  
+.sports-report-widget .red {
+  padding-top: 0.8em;
+  color: red;
 }
 
-[data-widget=sports-report-widget] time{
+.sports-report-widget .text {
+  flex: 0 1 auto;
+  padding-bottom: 0.8em;  
+  line-height: 1.4;
+}
+
+.sports-report-widget time{
   font-size: 0.6em;  
+}
+
+.sports-report-widget .hidden {
+  display: none;
 }

@@ -1,228 +1,64 @@
-// import runRequest from '../api/request';
+import Comment from './Comment';
 
 export default class SportsReportWidget {
-  constructor(parentEl) {
+  constructor(parentEl, eventSourceUrl) {
     this.parentEl = parentEl;
-    this.productList = [];
+    this.eventSourceUrl = eventSourceUrl;
+    this.classes = this.constructor.classes;
   }
 
-  /*
-  static get ctrlId() {
+  static get classes() {
     return {
-      widget: 'help-desk-widget',
-      add: 'button-add',
-      tickets: 'tickets',
-      ticket: 'ticket',
-      status: 'button-status',
-      text: 'text',
-      name: 'name',
-      description: 'description',
-      created: 'created',
-      edit: 'button-edit',
-      delete: 'button-delete',
+      widget: 'sports-report-widget',
+      wrap: 'comments-wrap',
+      comments: 'comments',
+      error: 'error',
     };
   }
 
   static get markup() {
     return `
-      <div class="header">
-        <button class="help-desk-button" data-id="${this.ctrlId.add}">Добавить тикет</button>
+      <div class="${this.classes.wrap}">
+        <div class="${this.classes.comments}">
+        </div>
       </div>
-      <div data-id="${this.ctrlId.tickets}">
-      </div>
+      <p class="${this.classes.error} hidden">Нет связи с сервером</p>  
     `;
   }
 
-  static get widgetSelector() {
-    return `[data-widget=${this.ctrlId.widget}]`;
-  }
-
-  static get addSelector() {
-    return `[data-id=${this.ctrlId.add}]`;
-  }
-
-  static get ticketsSelector() {
-    return `[data-id=${this.ctrlId.tickets}]`;
-  }
-
-  static get ticketSelector() {
-    return `[data-id=${this.ctrlId.ticket}]`;
-  }
-
-  static get statusSelector() {
-    return `[data-id=${this.ctrlId.status}]`;
-  }
-
-  static get textSelector() {
-    return `[data-id=${this.ctrlId.text}]`;
-  }
-
-  static get nameSelector() {
-    return `[data-id=${this.ctrlId.name}]`;
-  }
-
-  static get descriptionSelector() {
-    return `[data-id=${this.ctrlId.description}]`;
-  }
-
-  static get createdSelector() {
-    return `[data-id=${this.ctrlId.created}]`;
-  }
-
-  static get editSelector() {
-    return `[data-id=${this.ctrlId.edit}]`;
-  }
-
-  static get deleteSelector() {
-    return `[data-id=${this.ctrlId.delete}]`;
-  }
-*/
   bindToDOM() {
     this.widget = document.createElement('div');
-    //    this.widget.dataset.widget = this.constructor.ctrlId.widget;
-    //    this.widget.innerHTML = this.constructor.markup;
-    //    this.parentEl.appendChild(this.widget);
+    this.widget.className = this.classes.widget;
+    this.widget.innerHTML = this.constructor.markup;
 
-    //    this.addButton = this.widget.querySelector(this.constructor.addSelector);
-    //    this.tickets = this.widget.querySelector(this.constructor.ticketsSelector);
+    this.comments = this.widget.querySelector(`.${this.classes.comments}`);
+    this.error = this.widget.querySelector(`.${this.classes.error}`);
 
-    //    this.editForm = new EditForm(this);
-    //    this.editForm.bindToDOM();
-    //    this.deleteForm = new DeleteForm(this);
-    //    this.deleteForm.bindToDOM();
+    this.parentEl.append(this.widget);
 
-    //    this.addButton.addEventListener('click', this.onAddButtonClick.bind(this));
-    //    this.tickets.addEventListener('click', this.onTicketsClick.bind(this));
-
-    //    const params = {
-    //      data: {
-    //        method: 'allTickets',
-    //      },
-    //      responseType: 'json',
-    //      method: 'GET',
-    //    };
-
-    //    try {
-    //      this.redraw(await runRequest(params));
-    //    } catch (error) {
-    //      alert(error);
-    //    }
-  }
-/*
-  async onAddButtonClick(event) {
-    event.preventDefault();
-    await this.editForm.show();
+    this.connect();
   }
 
-  async onTicketsClick(event) {
-    event.preventDefault();
+  connect() {
+    const eventSource = new EventSource(this.eventSourceUrl);
 
-    const ticket = event.target.closest(this.constructor.ticketSelector);
-
-    switch (event.target.dataset.id) {
-      case this.constructor.ctrlId.status:
-        await this.invertStatus(ticket);
-        break;
-
-      case this.constructor.ctrlId.edit:
-        await this.editForm.show(ticket);
-        break;
-
-      case this.constructor.ctrlId.delete:
-        this.deleteForm.show(ticket);
-        break;
-
-      default:
-        await this.constructor.invertVisibleDescription(ticket);
-    }
+    eventSource.addEventListener('action', (evt) => this.addComment(evt));
+    eventSource.addEventListener('freekick', (evt) => this.addComment(evt));
+    eventSource.addEventListener('goal', (evt) => this.addComment(evt));
+    eventSource.addEventListener('open', () => this.hideError());
+    eventSource.addEventListener('error', () => this.showError());
   }
 
-  redraw(response) {
-    this.tickets.innerHTML = response.reduce((str, {
-      id, status, created,
-    }) => `
-      ${str}
-      <div data-id="${this.constructor.ctrlId.ticket}" data-index="${id}">
-        <div class="text" data-id="${this.constructor.ctrlId.text}">
-          <p data-id="${this.constructor.ctrlId.name}"></p>
-        </div>
-      </div>
-    `, '');
-
-    this.tickets.querySelectorAll(this.constructor.nameSelector).forEach((item, i) => {
-      const name = item;
-      name.textContent = response[i].name;
-    });
+  addComment(evt) {
+    const comment = new Comment(this.comments, evt);
+    comment.bindToDOM();
   }
 
-  static dateToString(timestamp) {
-    const date = new Date(timestamp);
-
-    const result = `0${date.getDate()
-    }.0${date.getMonth() + 1
-    }.0${date.getFullYear() % 100
-    } 0${date.getHours()
-    }:0${date.getMinutes()}`;
-
-    return result.replace(/\d(\d{2})/g, '$1');
+  hideError() {
+    this.error.classList.add('hidden');
   }
 
-  static async getDescription(id) {
-    const params = {
-      data: {
-        method: 'ticketById',
-        id,
-      },
-      responseType: 'text',
-      method: 'GET',
-    };
-
-    try {
-      return await runRequest(params);
-    } catch (error) {
-      alert(error);
-      return null;
-    }
+  showError() {
+    this.error.classList.remove('hidden');
   }
-
-  async invertStatus(ticket) {
-    const id = ticket.dataset.index;
-    const status = ticket.querySelector(this.constructor.statusSelector);
-    const name = ticket.querySelector(this.constructor.nameSelector);
-
-    const params = {
-      data: {
-        method: 'createTicket',
-        id,
-        status: status.textContent === '\u2713' ? '' : '1',
-        name: name.textContent,
-        description: await this.constructor.getDescription(id),
-      },
-      responseType: 'json',
-      method: 'POST',
-    };
-
-    try {
-      this.redraw(await runRequest(params));
-    } catch (error) {
-      alert(error);
-    }
-  }
-
-  static async invertVisibleDescription(ticket) {
-    const textContainer = ticket.querySelector(this.textSelector);
-    let description = ticket.querySelector(this.descriptionSelector);
-
-    if (description) {
-      textContainer.removeChild(description);
-      description = null;
-    } else {
-      description = document.createElement('p');
-      description.dataset.id = this.ctrlId.description;
-      textContainer.appendChild(description);
-
-      description.textContent = await this.getDescription(ticket.dataset.index);
-    }
-  }
-  */
 }
